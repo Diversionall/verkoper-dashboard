@@ -3,10 +3,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Klantbezoeken gecombineerd", layout="wide")
+st.set_page_config(page_title="Klantbezoek per winkelcategorie", layout="wide")
 
-st.title("📊 Klantbezoek per hoofdcategorie – Gecombineerde data 2024 + 2025")
-st.markdown("Aantal producten per hoofdcategorie, gesplitst naar maandelijkse klantbezoeksklasse. Donker = veel bezoek, licht = minder bezoek.")
+st.title("📊 Klantbezoeken per hoofdcategorie (winkel) – Gecombineerde data 2024 + 2025")
+st.markdown("Aantal producten per hoofdcategorie (winkel), gesplitst naar klantbezoeksklasse per maand. Donker = veel bezoek, licht = weinig.")
 st.markdown("---")
 
 @st.cache_data
@@ -14,21 +14,10 @@ def load_data():
     df_2024 = pd.read_excel("data_2024.xlsx")
     df_2025 = pd.read_excel("data_2025.xlsx")
 
+    df_2024["winkel"] = df_2024["category_a"]
+    df_2025["winkel"] = df_2025["Winkel"]
 
-    df_2025 = df_2025.rename(columns={
-        "Klantbezoeken": "klantbezoeken",
-        "Productgroep": "productgroep",
-        "Merknaam": "merknaam",
-        "title": "artikel",
-        "price": "huidige_prijs",
-        "Relevante Marktprijs": "relevante_prijs",
-        "rating": "rating",
-        "rating_count": "rating_count",
-        "delivery": "delivery",
-        "Winkel": "category_a"
-    })
-
-    kolommen = ["klantbezoeken", "productgroep", "merknaam", "artikel", "huidige_prijs", "relevante_prijs", "rating", "rating_count", "delivery", "category_a"]
+    kolommen = ["klantbezoeken", "productgroep", "merknaam", "artikel", "huidige_prijs", "relevante_prijs", "rating", "rating_count", "delivery", "winkel"]
     df_2024 = df_2024[kolommen]
     df_2025 = df_2025[kolommen]
     df = pd.concat([df_2024, df_2025], ignore_index=True)
@@ -69,23 +58,23 @@ def load_data():
         "Minder dan 30",
         "Onbekend"
     ]
-    data = df.groupby(["category_a", "klantbezoeksklasse"]).size().reset_index(name="aantal_producten")
+    data = df.groupby(["winkel", "klantbezoeksklasse"]).size().reset_index(name="aantal_producten")
     data["klantbezoeksklasse"] = pd.Categorical(data["klantbezoeksklasse"], categories=klasse_order, ordered=True)
-    data = data.sort_values(["category_a", "klantbezoeksklasse"])
+    data = data.sort_values(["winkel", "klantbezoeksklasse"])
     return data
 
 data = load_data()
 
 fig = px.bar(data,
              x="aantal_producten",
-             y="category_a",
+             y="winkel",
              color="klantbezoeksklasse",
              orientation="h",
-             title="Aantal producten per hoofdcategorie naar klantbezoeksklasse",
+             title="Aantal producten per winkelcategorie naar klantbezoeksklasse",
              color_discrete_sequence=px.colors.sequential.Blues,
              labels={
                  "aantal_producten": "# Producten",
-                 "category_a": "Hoofdcategorie",
+                 "winkel": "Hoofdcategorie",
                  "klantbezoeksklasse": "Bezoeksklasse/maand"
              })
 
