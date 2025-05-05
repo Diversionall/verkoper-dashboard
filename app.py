@@ -17,10 +17,9 @@ def load_data():
         "price": "huidige_prijs"
     })
 
-    # Winkelwaarden schonen
+    # Winkelkolom opschonen
     df["winkel"] = df["winkel"].astype(str).str.strip()
-    df = df[df["winkel"].str.lower() != "nan"]
-    df = df[df["winkel"].str.len() > 0]
+    df = df[df["winkel"].notnull() & (df["winkel"].str.len() > 1) & (df["winkel"].str.lower() != "nan")]
 
     return df
 
